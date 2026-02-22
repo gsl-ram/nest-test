@@ -2,6 +2,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { Public } from '../../common/decorators/public.decorator';
+import { SkipPermission } from '../../common/decorators/skip-permission.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -14,6 +15,7 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @SkipPermission()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout() {

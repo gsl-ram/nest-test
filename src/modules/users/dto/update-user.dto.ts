@@ -3,7 +3,7 @@ import {
   IsOptional,
   IsString,
   MinLength,
-  IsIn,
+  IsMongoId,
 } from 'class-validator';
 
 export class UpdateUserDto {
@@ -21,6 +21,6 @@ export class UpdateUserDto {
   password?: string;
 
   @IsOptional()
-  @IsIn(['admin', 'user'])
+  @IsMongoId()
   role?: string;
 }

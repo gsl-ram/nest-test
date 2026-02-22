@@ -28,10 +28,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const populatedRole = user.role as any;
+
     const payload: JwtPayload = {
       sub: user._id.toString(),
       username: user.username,
-      role: user.role,
+      role: populatedRole.name,
+      permissions: populatedRole.permissions,
     };
 
     return {

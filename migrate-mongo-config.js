@@ -3,10 +3,7 @@ require('dotenv').config();
 const config = {
   mongodb: {
     url: process.env.MONGODB_URI || 'mongodb://localhost:27017',
-    options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    },
+    options: {},
   },
   migrationsDir: 'migrations',
   changelogCollectionName: 'changelog',
