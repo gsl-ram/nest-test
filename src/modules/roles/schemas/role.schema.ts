@@ -10,10 +10,7 @@ export class ModulePermissions {
   delete: boolean;
 }
 
-export class Permissions {
-  users: ModulePermissions;
-  roles: ModulePermissions;
-}
+export type Permissions = Record<string, ModulePermissions>;
 
 @Schema({ timestamps: true })
 export class Role {
@@ -21,7 +18,7 @@ export class Role {
   name: string;
 
   @Prop({ type: Object, required: true })
-  permissions: Permissions;
+  permissions: Record<string, ModulePermissions>;
 
   createdAt: Date;
   updatedAt: Date;

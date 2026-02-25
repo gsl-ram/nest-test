@@ -1,4 +1,4 @@
-import { IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PermissionsDto } from './create-role.dto';
 
@@ -8,6 +8,7 @@ export class UpdateRoleDto {
   name?: string;
 
   @IsOptional()
+  @IsObject()
   @ValidateNested()
   @Type(() => PermissionsDto)
   permissions?: PermissionsDto;

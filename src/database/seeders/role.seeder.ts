@@ -7,13 +7,35 @@ const DEFAULT_ROLES = [
     permissions: {
       users: { view: true, create: true, edit: true, delete: true },
       roles: { view: true, create: true, edit: true, delete: true },
+      jobs: { view: true, create: true, edit: true, delete: true },
+      applications: { view: true, create: true, edit: true, delete: true },
+      companies: { view: true, create: true, edit: true, delete: true },
+      profiles: { view: true, create: true, edit: true, delete: true },
+      admin: { view: true, create: true, edit: true, delete: true },
     },
   },
   {
-    name: 'user',
+    name: 'job_seeker',
     permissions: {
-      users: { view: true, create: false, edit: false, delete: false },
+      users: { view: false, create: false, edit: false, delete: false },
       roles: { view: false, create: false, edit: false, delete: false },
+      jobs: { view: true, create: false, edit: false, delete: false },
+      applications: { view: true, create: true, edit: false, delete: false },
+      companies: { view: true, create: false, edit: false, delete: false },
+      profiles: { view: true, create: true, edit: true, delete: false },
+      admin: { view: false, create: false, edit: false, delete: false },
+    },
+  },
+  {
+    name: 'employer',
+    permissions: {
+      users: { view: false, create: false, edit: false, delete: false },
+      roles: { view: false, create: false, edit: false, delete: false },
+      jobs: { view: true, create: true, edit: true, delete: true },
+      applications: { view: true, create: false, edit: true, delete: false },
+      companies: { view: true, create: true, edit: true, delete: true },
+      profiles: { view: true, create: true, edit: true, delete: false },
+      admin: { view: false, create: false, edit: false, delete: false },
     },
   },
 ];

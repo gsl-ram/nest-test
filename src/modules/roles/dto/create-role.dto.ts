@@ -1,6 +1,8 @@
 import {
   IsBoolean,
   IsNotEmpty,
+  IsObject,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -21,13 +23,40 @@ export class ModulePermissionsDto {
 }
 
 export class PermissionsDto {
+  @IsOptional()
   @ValidateNested()
   @Type(() => ModulePermissionsDto)
-  users: ModulePermissionsDto;
+  users?: ModulePermissionsDto;
 
+  @IsOptional()
   @ValidateNested()
   @Type(() => ModulePermissionsDto)
-  roles: ModulePermissionsDto;
+  roles?: ModulePermissionsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ModulePermissionsDto)
+  jobs?: ModulePermissionsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ModulePermissionsDto)
+  applications?: ModulePermissionsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ModulePermissionsDto)
+  companies?: ModulePermissionsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ModulePermissionsDto)
+  profiles?: ModulePermissionsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ModulePermissionsDto)
+  admin?: ModulePermissionsDto;
 }
 
 export class CreateRoleDto {
@@ -35,6 +64,7 @@ export class CreateRoleDto {
   @IsNotEmpty()
   name: string;
 
+  @IsObject()
   @ValidateNested()
   @Type(() => PermissionsDto)
   permissions: PermissionsDto;

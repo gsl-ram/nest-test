@@ -19,6 +19,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if ((user as any).isBanned) {
+      throw new UnauthorizedException('Your account has been suspended');
+    }
+
     const isPasswordValid = await bcrypt.compare(
       loginDto.password,
       user.password,

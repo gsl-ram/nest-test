@@ -18,6 +18,9 @@ export class User {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Role.name, required: true })
   role: mongoose.Types.ObjectId;
 
+  @Prop({ default: false })
+  isBanned: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }
