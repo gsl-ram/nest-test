@@ -1,0 +1,1206 @@
+{
+  "info": {
+    "name": "Job Portal Backend API",
+    "description": "Complete API collection for the Job Portal Backend - a NestJS-based Job Seeking & Hiring Platform.\n\n## Setup\n1. Import this collection into Postman\n2. Create an environment with `baseUrl` (e.g. http://localhost:3000) and optionally `token`\n3. Run **Auth > Login** first to get an access token\n4. The collection uses `{{token}}` for protected routes - set it manually or use a script to save from Login response\n\n## Authentication\n- **Public routes**: Auth Login\n- **Protected routes**: All others require `Authorization: Bearer {{token}}`\n\n## Roles\n- **admin**: Full access\n- **job_seeker**: Jobs (view), Applications (view/create), Profiles (own)\n- **employer**: Companies, Jobs (create/edit), Applications (manage own jobs), Profiles (own)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "companyId",
+      "value": ""
+    },
+    {
+      "key": "jobId",
+      "value": ""
+    },
+    {
+      "key": "applicationId",
+      "value": ""
+    },
+    {
+      "key": "conversationId",
+      "value": ""
+    },
+    {
+      "key": "roleId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.access_token) {",
+                  "        pm.collectionVariables.set('token', json.access_token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with username and password. Returns `access_token` (JWT).\n\n**Default seeded user:** admin / 1234\n\nResponse: `{ \"access_token\": \"eyJhbGc...\" }`"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout. Client should discard the token. Server returns a message."
+          }
+        }
+      ],
+      "description": "Authentication endpoints. Login is public; Logout requires Bearer token."
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"secret123\",\n  \"role\": \"{{roleId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            },
+            "description": "Create a new user. `role` is optional (MongoDB ObjectId of a role). If omitted, defaults to 'user' role if it exists.\n\n**Required:** username, email, password (min 4 chars)"
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            },
+            "description": "List all users. Password is excluded from response."
+          }
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Get a single user by ID."
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe_updated\",\n  \"email\": \"john.new@example.com\",\n  \"password\": \"newsecret456\",\n  \"role\": \"{{roleId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Update user. All fields optional. Password is hashed if provided."
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Delete a user by ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"custom_role\",\n  \"permissions\": {\n    \"users\": { \"view\": true, \"create\": false, \"edit\": false, \"delete\": false },\n    \"roles\": { \"view\": true, \"create\": false, \"edit\": false, \"delete\": false },\n    \"jobs\": { \"view\": true, \"create\": false, \"edit\": false, \"delete\": false },\n    \"applications\": { \"view\": true, \"create\": true, \"edit\": false, \"delete\": false },\n    \"companies\": { \"view\": true, \"create\": false, \"edit\": false, \"delete\": false },\n    \"profiles\": { \"view\": true, \"create\": true, \"edit\": true, \"delete\": false },\n    \"admin\": { \"view\": false, \"create\": false, \"edit\": false, \"delete\": false }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles"]
+            },
+            "description": "Create a new role. Each module has view/create/edit/delete booleans.\n\n**Seeded roles:** admin, job_seeker, employer"
+          }
+        },
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles"]
+            },
+            "description": "List all roles. Use this to get role IDs for creating users."
+          }
+        },
+        {
+          "name": "Get Role",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"custom_role_updated\",\n  \"permissions\": {\n    \"jobs\": { \"view\": true, \"create\": true, \"edit\": false, \"delete\": false }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "Create Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Corp\",\n  \"description\": \"Leading tech company\",\n  \"website\": \"https://acme.com\",\n  \"industry\": \"Technology\",\n  \"companySize\": \"50-200\",\n  \"location\": \"San Francisco, CA\",\n  \"logo\": \"/uploads/images/logo.png\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/companies",
+              "host": ["{{baseUrl}}"],
+              "path": ["companies"]
+            },
+            "description": "Create a company. Only `name` is required. `createdBy` is set from the authenticated user (employer)."
+          }
+        },
+        {
+          "name": "List Companies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/companies",
+              "host": ["{{baseUrl}}"],
+              "path": ["companies"]
+            }
+          }
+        },
+        {
+          "name": "List My Companies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/companies/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["companies", "my"]
+            },
+            "description": "List companies created by the authenticated user."
+          }
+        },
+        {
+          "name": "Get Company",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/companies/{{companyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["companies", "{{companyId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Company",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Corporation\",\n  \"description\": \"Updated description\",\n  \"location\": \"New York, NY\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/companies/{{companyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["companies", "{{companyId}}"]
+            },
+            "description": "Update company. Only owner can update."
+          }
+        },
+        {
+          "name": "Delete Company",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/companies/{{companyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["companies", "{{companyId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Job Seeker Profiles",
+      "item": [
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"education\": [\n    {\n      \"institution\": \"MIT\",\n      \"degree\": \"BS\",\n      \"field\": \"Computer Science\"\n    }\n  ],\n  \"skills\": [\"JavaScript\", \"TypeScript\", \"Node.js\"],\n  \"experience\": [\n    {\n      \"company\": \"Tech Co\",\n      \"title\": \"Software Engineer\",\n      \"description\": \"Built APIs\"\n    }\n  ],\n  \"resume\": \"/uploads/resumes/resume.pdf\",\n  \"expectedSalary\": 80000,\n  \"preferredLocation\": \"Remote\",\n  \"portfolioLinks\": [\"https://github.com/johndoe\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/job-seeker-profiles",
+              "host": ["{{baseUrl}}"],
+              "path": ["job-seeker-profiles"]
+            },
+            "description": "Create job seeker profile. 1:1 with user. All fields optional."
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/job-seeker-profiles/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["job-seeker-profiles", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/job-seeker-profiles/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["job-seeker-profiles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skills\": [\"JavaScript\", \"TypeScript\", \"React\", \"Node.js\"],\n  \"expectedSalary\": 90000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/job-seeker-profiles/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["job-seeker-profiles", "me"]
+            }
+          }
+        },
+        {
+          "name": "Delete Profile",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/job-seeker-profiles/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["job-seeker-profiles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employer Profiles",
+      "item": [
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"designation\": \"HR Manager\",\n  \"companyId\": \"{{companyId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employer-profiles",
+              "host": ["{{baseUrl}}"],
+              "path": ["employer-profiles"]
+            },
+            "description": "Create employer profile. Link to a company via companyId."
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/employer-profiles/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["employer-profiles", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/employer-profiles/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["employer-profiles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"designation\": \"Senior HR Manager\",\n  \"companyId\": \"{{companyId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employer-profiles/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["employer-profiles", "me"]
+            }
+          }
+        },
+        {
+          "name": "Delete Profile",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/employer-profiles/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["employer-profiles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "Create Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"description\": \"We are looking for an experienced developer.\",\n  \"requiredSkills\": [\"JavaScript\", \"TypeScript\", \"Node.js\"],\n  \"salaryMin\": 80000,\n  \"salaryMax\": 120000,\n  \"employmentType\": \"FULL_TIME\",\n  \"location\": \"Remote\",\n  \"companyId\": \"{{companyId}}\",\n  \"status\": \"OPEN\",\n  \"expiryDate\": \"2025-12-31\",\n  \"experienceLevel\": \"Senior\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "Create a job. Company must belong to the authenticated user.\n\n**employmentType:** FULL_TIME, PART_TIME, CONTRACT, REMOTE, HYBRID\n**status:** DRAFT, OPEN, CLOSED\n**expiryDate:** ISO date string"
+          }
+        },
+        {
+          "name": "List Jobs (All)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "List all OPEN jobs. No query params = simple list."
+          }
+        },
+        {
+          "name": "Search Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/jobs?skills=JavaScript&skills=TypeScript&location=Remote&salaryMin=70000&salaryMax=150000&employmentType=FULL_TIME&search=engineer&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "skills", "value": "JavaScript", "disabled": false },
+                { "key": "skills", "value": "TypeScript", "disabled": false },
+                { "key": "location", "value": "Remote", "disabled": false },
+                { "key": "salaryMin", "value": "70000", "disabled": false },
+                { "key": "salaryMax", "value": "150000", "disabled": false },
+                { "key": "employmentType", "value": "FULL_TIME", "disabled": false },
+                { "key": "experienceLevel", "value": "Senior", "disabled": true },
+                { "key": "search", "value": "engineer", "disabled": false },
+                { "key": "page", "value": "1", "disabled": false },
+                { "key": "limit", "value": "10", "disabled": false }
+              ]
+            },
+            "description": "Search jobs with filters. Returns `{ jobs, total, page, limit }`."
+          }
+        },
+        {
+          "name": "List My Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/jobs/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "my"]
+            },
+            "description": "List jobs created by the authenticated user."
+          }
+        },
+        {
+          "name": "Get Job",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Job",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Software Engineer (Updated)\",\n  \"salaryMax\": 130000,\n  \"status\": \"CLOSED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Job Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CLOSED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}", "status"]
+            },
+            "description": "Update job status: DRAFT, OPEN, CLOSED"
+          }
+        },
+        {
+          "name": "Delete Job",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "Create Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": \"{{jobId}}\",\n  \"resumeSnapshot\": \"/uploads/resumes/my-resume.pdf\",\n  \"coverLetter\": \"I am excited to apply for this position. I have 5 years of experience in Node.js and TypeScript.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/applications",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications"]
+            },
+            "description": "Apply for a job. One application per seeker per job. Job must be OPEN.\n\n**Rate limit:** 5 applications per 60 seconds"
+          }
+        },
+        {
+          "name": "List My Applications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/applications/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", "my"]
+            },
+            "description": "List applications by the authenticated seeker."
+          }
+        },
+        {
+          "name": "List Applications for Job",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/applications/job/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", "job", "{{jobId}}"]
+            },
+            "description": "List applications for a job. Only job owner (employer) can access."
+          }
+        },
+        {
+          "name": "Get Application",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/applications/{{applicationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", "{{applicationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Application Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SHORTLISTED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/applications/{{applicationId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", "{{applicationId}}", "status"]
+            },
+            "description": "Update status: APPLIED, SHORTLISTED, INTERVIEW, REJECTED, HIRED. Only job owner can update."
+          }
+        },
+        {
+          "name": "Delete Application",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/applications/{{applicationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", "{{applicationId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload Resume",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "PDF file, max 5MB"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/uploads/resume",
+              "host": ["{{baseUrl}}"],
+              "path": ["uploads", "resume"]
+            },
+            "description": "Upload resume (PDF only, max 5MB). Form field name: `file`.\n\nReturns: `{ \"url\": \"/uploads/resumes/...\" }`"
+          }
+        },
+        {
+          "name": "Upload Profile Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "JPEG/PNG/GIF/WebP, max 2MB"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/uploads/profile-image",
+              "host": ["{{baseUrl}}"],
+              "path": ["uploads", "profile-image"]
+            },
+            "description": "Upload profile image. Returns URL."
+          }
+        },
+        {
+          "name": "Upload Company Logo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "JPEG/PNG/GIF/WebP, max 2MB"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/uploads/company-logo",
+              "host": ["{{baseUrl}}"],
+              "path": ["uploads", "company-logo"]
+            },
+            "description": "Upload company logo. Returns URL."
+          }
+        }
+      ],
+      "description": "File uploads. All require Bearer token. Use form-data with key `file`."
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/notifications?unreadOnly=false&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"],
+              "query": [
+                { "key": "unreadOnly", "value": "false" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "List notifications. Returns `{ notifications, total }`"
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/notifications/count/unread",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "count", "unread"]
+            },
+            "description": "Returns `{ count: number }`"
+          }
+        },
+        {
+          "name": "Get Notification",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/notifications/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark as Read",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/notifications/:id/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", ":id", "read"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/notifications/read-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "read-all"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversations",
+      "item": [
+        {
+          "name": "Create Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participantIds\": [\"{{userId}}\"],\n  \"jobId\": \"{{jobId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations"]
+            },
+            "description": "Create or get existing conversation. Current user is auto-added. Need at least 1 other participant. `jobId` is optional."
+          }
+        },
+        {
+          "name": "List My Conversations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations"]
+            }
+          }
+        },
+        {
+          "name": "Get Conversation",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Hello! I am interested in the position.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "messages"]
+            },
+            "description": "Send a message in a conversation. Must be a participant."
+          }
+        },
+        {
+          "name": "List Messages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/messages?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "messages"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "List messages with pagination."
+          }
+        },
+        {
+          "name": "Mark Message as Read",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/messages/:messageId/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations", "{{conversationId}}", "messages", ":messageId", "read"],
+              "variable": [
+                {
+                  "key": "messageId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List Pending Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/jobs/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "jobs", "pending"]
+            },
+            "description": "List jobs with moderationStatus PENDING_APPROVAL. Admin only."
+          }
+        },
+        {
+          "name": "List Pending Companies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/companies/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "companies", "pending"]
+            },
+            "description": "List companies with verificationStatus pending. Admin only."
+          }
+        },
+        {
+          "name": "Verify Company",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"verified\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/companies/{{companyId}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "companies", "{{companyId}}", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Moderate Job",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/jobs/{{jobId}}/moderate",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "jobs", "{{jobId}}", "moderate"]
+            },
+            "description": "Set moderationStatus: PENDING_APPROVAL, APPROVED, REJECTED"
+          }
+        },
+        {
+          "name": "Ban User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"banned\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/ban",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users", "{{userId}}", "ban"]
+            },
+            "description": "Ban or unban a user. Banned users cannot login."
+          }
+        }
+      ],
+      "description": "Admin endpoints. Require admin role."
+    },
+    {
+      "name": "Saved Jobs",
+      "item": [
+        {
+          "name": "Save Job",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/saved-jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["saved-jobs", "{{jobId}}"]
+            },
+            "description": "Bookmark a job for later."
+          }
+        },
+        {
+          "name": "List Saved Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/saved-jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["saved-jobs"]
+            }
+          }
+        },
+        {
+          "name": "Check if Saved",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/saved-jobs/{{jobId}}/check",
+              "host": ["{{baseUrl}}"],
+              "path": ["saved-jobs", "{{jobId}}", "check"]
+            },
+            "description": "Returns `{ saved: true|false }`"
+          }
+        },
+        {
+          "name": "Remove Saved Job",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/saved-jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["saved-jobs", "{{jobId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

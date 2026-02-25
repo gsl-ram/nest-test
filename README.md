@@ -380,6 +380,18 @@ Migrations are run with [migrate-mongo](https://github.com/seppevs/migrate-mongo
 
 ---
 
+## Postman Collection
+
+A complete Postman collection with all routes and sample payloads is in the `postman/` folder:
+
+- **Import:** `postman/Job_Portal_Backend.postman_collection.json`
+- **Environment:** `postman/Job_Portal_Backend.postman_environment.json`
+- **Guide:** [postman/README.md](postman/README.md)
+
+Run **Auth > Login** first to get a token; the collection auto-saves it for protected routes.
+
+---
+
 ## Documentation
 
 - [LEARN.md](LEARN.md) – NestJS basics, auth, guards
