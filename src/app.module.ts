@@ -10,7 +10,6 @@ import { JobSeekerProfilesModule } from './modules/job-seeker-profiles/job-seeke
 import { EmployerProfilesModule } from './modules/employer-profiles/employer-profiles.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
-import { UploadsModule } from './modules/uploads/uploads.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 import { MessagesModule } from './modules/messages/messages.module';
@@ -20,8 +19,6 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bull';
 import { ConfigService } from '@nestjs/config';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 
@@ -37,7 +34,6 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     EmployerProfilesModule,
     JobsModule,
     ApplicationsModule,
-    UploadsModule,
     NotificationsModule,
     ConversationsModule,
     MessagesModule,
@@ -57,10 +53,6 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
           port: config.get('REDIS_PORT', 6379),
         },
       }),
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
     }),
   ],
   providers: [
